@@ -1,0 +1,84 @@
+#!/bin/sh
+cat <<'EOF'
+/* CAUTION: 規格準拠度はたぶん低い */
+#include <iostream>
+#include <cstring>
+#include <random>
+#include <stack>
+#include <map>
+#define repeat_from(i,m,n) for (int i = (m); (i) < (n); ++(i))
+#define repeat(i,n) repeat_from(i,0,n)
+typedef long long ll;
+using namespace std;
+const char *initial_code[] = {
+EOF
+perl -pe 's/"/\\"/g ; chomp; $_ = "\"" . $_ . "\",\n"'
+cat <<'EOF'
+};
+const int dy[] = { -1, 1, 0, 0 };
+const int dx[] = { 0, 0, 1, -1 };
+int main() {
+    random_device dev;
+    default_random_engine gen(dev());
+    uniform_int_distribution<int> question(0, 3);
+    map<pair<int,int>,char> code;
+    repeat (y, sizeof initial_code / sizeof initial_code[0]) {
+        int n = strlen(initial_code[y]);
+        repeat (x, n) {
+            code[make_pair(y, x)] = initial_code[y][x];
+        }
+    }
+    stack<ll> stk;
+    auto p = make_pair(0, 0);
+    int & y = p.first;
+    int & x = p.second;
+    int q = 2; // right
+    bool is_quoted = false;
+    while (true) {
+        if (not code.count(p)) code[p] = 0;
+        char c = code[p];
+        if (is_quoted) {
+            if (c == '"') {
+                is_quoted = false;
+            } else {
+                stk.push(c);
+            }
+        } else {
+            switch (c) {
+                case '^': q = 0; break;
+                case 'v': q = 1; break;
+                case '>': q = 2; break;
+                case '<': q = 3; break;
+                case '_': q = stk.top() ? 3 : 2; stk.pop(); break;
+                case '|': q = stk.top() ? 0 : 1; stk.pop(); break;
+                case '?': q = question(gen); break;
+                case '#': y += dy[q]; x += dx[q]; break;
+                case '@': return 0;
+                case '0': case '1': case '2': case '3': case '4':
+                case '5': case '6': case '7': case '8': case '9':
+                          stk.push(c - '0'); break;
+                case '"': is_quoted = true; break;
+                case '&': { ll n; cin >> n; stk.push(n); } break;
+                case '~': stk.push(cin.get()); break;
+                case '.': cout << stk.top() << ' '; cout.flush(); stk.pop(); break;
+                case ',': cout << char(stk.top()); cout.flush(); stk.pop(); break;
+                case '+': { int b = stk.top(); stk.pop(); int a = stk.top(); stk.pop(); stk.push(a + b); } break;
+                case '-': { int b = stk.top(); stk.pop(); int a = stk.top(); stk.pop(); stk.push(a - b); } break;
+                case '*': { int b = stk.top(); stk.pop(); int a = stk.top(); stk.pop(); stk.push(a * b); } break;
+                case '/': { int b = stk.top(); stk.pop(); int a = stk.top(); stk.pop(); stk.push(a / b); } break;
+                case '%': { int b = stk.top(); stk.pop(); int a = stk.top(); stk.pop(); stk.push(a % b); } break;
+                case '`': { int b = stk.top(); stk.pop(); int a = stk.top(); stk.pop(); stk.push(a > b); } break;
+                case '!': { int a = stk.top(); stk.pop(); stk.push(not a); } break;
+                case ':': stk.push(stk.top()); break;
+                case '\\': { int b = stk.top(); stk.pop(); int a = stk.top(); stk.pop(); stk.push(b); stk.push(a); } break;
+                case '$': stk.pop(); break;
+                case 'g': { int y = stk.top(); stk.pop(); int x = stk.top(); stk.pop(); stk.push(code[make_pair(y, x)]); } break;
+                case 'p': { int y = stk.top(); stk.pop(); int x = stk.top(); stk.pop(); int v = stk.top(); stk.pop(); code[make_pair(y, x)] = v; } break;
+            }
+        }
+        y += dy[q];
+        x += dx[q];
+    }
+    return 1;
+}
+EOF
