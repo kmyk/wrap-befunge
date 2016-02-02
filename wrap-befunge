@@ -1,5 +1,7 @@
 #!/bin/sh
 cat <<'EOF'
+// https://github.com/kmyk/wrap-befunge
+// befunge-93 + no code size restriction
 /* CAUTION: 規格準拠度はたぶん低い 致命的なバグもまだ残ってるかも */
 #include <iostream>
 #include <cstring>
