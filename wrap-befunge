@@ -1,6 +1,6 @@
 #!/bin/sh
 cat <<'EOF'
-/* CAUTION: 規格準拠度はたぶん低い */
+/* CAUTION: 規格準拠度はたぶん低い 致命的なバグもまだ残ってるかも */
 #include <iostream>
 #include <cstring>
 #include <random>
@@ -12,7 +12,7 @@ typedef long long ll;
 using namespace std;
 const char *initial_code[] = {
 EOF
-perl -pe 's/"/\\"/g ; chomp; $_ = "\"" . $_ . "\",\n"'
+perl -pe 's/\\/\\\\/g ; s/"/\\"/g ; chomp; $_ = "\"" . $_ . "\",\n"'
 cat <<'EOF'
 };
 const int dy[] = { -1, 1, 0, 0 };
@@ -21,7 +21,7 @@ int main() {
     random_device dev;
     default_random_engine gen(dev());
     uniform_int_distribution<int> question(0, 3);
-    map<pair<int,int>,char> code;
+    map<pair<int,int>,ll> code;
     repeat (y, sizeof initial_code / sizeof initial_code[0]) {
         int n = strlen(initial_code[y]);
         repeat (x, n) {
